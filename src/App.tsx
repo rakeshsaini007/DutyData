@@ -54,6 +54,44 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [isExisting, setIsExisting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+
+  const validate = (): boolean => {
+    const errors: Partial<Record<keyof FormData, string>> = {};
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.EMAIL && !emailRegex.test(formData.EMAIL)) {
+      errors.EMAIL = "Please enter a valid email address.";
+    }
+
+    // PAN Number validation
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    if (formData["PAN Number"] && !panRegex.test(formData["PAN Number"])) {
+      errors["PAN Number"] = "PAN must be: 5 uppercase letters, 4 digits, 1 uppercase letter (e.g., ABCDE1234F).";
+    }
+
+    // Adhar Number validation
+    const adharRegex = /^[0-9]{12}$/;
+    if (formData["Adhar Number"] && !adharRegex.test(formData["Adhar Number"])) {
+      errors["Adhar Number"] = "Aadhaar number must be exactly 12 digits.";
+    }
+
+    // Account Number validation
+    const accountRegex = /^[0-9]{11,}$/;
+    if (formData["Account Number"] && !accountRegex.test(formData["Account Number"])) {
+      errors["Account Number"] = "Account number must be numeric and greater than 10 digits.";
+    }
+
+    // IFSC Code validation
+    const ifscRegex = /^[A-Z]{4}[0-9]{1}[A-Z0-9]{6}$/;
+    if (formData["IFSC Code"] && !ifscRegex.test(formData["IFSC Code"])) {
+      errors["IFSC Code"] = "IFSC must be: 4 uppercase letters, 1 digit, 6 alphanumeric characters.";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -94,6 +132,12 @@ export default function App() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validate()) {
+      toast.error("Please fix the errors in the form before submitting.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -231,11 +275,12 @@ export default function App() {
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <Input 
                         id="EMAIL" 
-                        className="pl-10"
+                        className={`pl-10 ${fieldErrors.EMAIL ? 'border-red-500 focus:ring-red-500' : ''}`}
                         value={formData.EMAIL} 
                         onChange={(e) => setFormData(prev => ({ ...prev, EMAIL: e.target.value }))}
                       />
                     </div>
+                    {fieldErrors.EMAIL && <p className="text-xs text-red-500 mt-1">{fieldErrors.EMAIL}</p>}
                   </div>
                 </div>
 
@@ -275,26 +320,26 @@ export default function App() {
                     <CreditCard className="w-5 h-5" /> Identity & Banking
                   </h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="PAN Number">PAN Number</Label>
                       <Input 
                         id="PAN Number" 
+                        className={fieldErrors["PAN Number"] ? 'border-red-500 focus:ring-red-500' : ''}
                         value={formData["PAN Number"]} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, "PAN Number": e.target.value }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, "PAN Number": e.target.value.toUpperCase() }))}
                       />
+                      {fieldErrors["PAN Number"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["PAN Number"]}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="Adhar Number">Aadhaar Number</Label>
                       <Input 
                         id="Adhar Number" 
+                        className={fieldErrors["Adhar Number"] ? 'border-red-500 focus:ring-red-500' : ''}
                         value={formData["Adhar Number"]} 
                         onChange={(e) => setFormData(prev => ({ ...prev, "Adhar Number": e.target.value }))}
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="Identity No">Identity No (Readonly)</Label>
-                      <Input id="Identity No" value={formData["Identity No"]} readOnly className="bg-slate-50" />
+                      {fieldErrors["Adhar Number"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Adhar Number"]}</p>}
                     </div>
                   </div>
 
@@ -303,34 +348,21 @@ export default function App() {
                       <Label htmlFor="Account Number">Account Number</Label>
                       <Input 
                         id="Account Number" 
+                        className={fieldErrors["Account Number"] ? 'border-red-500 focus:ring-red-500' : ''}
                         value={formData["Account Number"]} 
                         onChange={(e) => setFormData(prev => ({ ...prev, "Account Number": e.target.value }))}
                       />
+                      {fieldErrors["Account Number"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Account Number"]}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="IFSC Code">IFSC Code</Label>
                       <Input 
                         id="IFSC Code" 
+                        className={fieldErrors["IFSC Code"] ? 'border-red-500 focus:ring-red-500' : ''}
                         value={formData["IFSC Code"]} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, "IFSC Code": e.target.value }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, "IFSC Code": e.target.value.toUpperCase() }))}
                       />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Other Info */}
-                <div className="space-y-4 md:col-span-2">
-                  <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                    <Hash className="w-5 h-5" /> Other Details
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="Land Line Number">Land Line Number</Label>
-                      <Input id="Land Line Number" value={formData["Land Line Number"]} readOnly className="bg-slate-50" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="Identity Name(Others)">Identity Name (Others)</Label>
-                      <Input id="Identity Name(Others)" value={formData["Identity Name(Others)"]} readOnly className="bg-slate-50" />
+                      {fieldErrors["IFSC Code"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["IFSC Code"]}</p>}
                     </div>
                   </div>
                 </div>
