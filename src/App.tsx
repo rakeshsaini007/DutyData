@@ -29,6 +29,9 @@ interface FormData {
   "Adhar Number": string;
   "Account Number": string;
   "IFSC Code": string;
+  "BANK NAME": string;
+  "BRANCH": string;
+  "EHRMS CODE": string;
 }
 
 const initialFormData: FormData = {
@@ -47,6 +50,9 @@ const initialFormData: FormData = {
   "Adhar Number": "",
   "Account Number": "",
   "IFSC Code": "",
+  "BANK NAME": "",
+  "BRANCH": "",
+  "EHRMS CODE": "",
 };
 
 export default function App() {
@@ -59,6 +65,14 @@ export default function App() {
   const validate = (): boolean => {
     const errors: Partial<Record<keyof FormData, string>> = {};
     
+    // Mandatory check for all fields
+    Object.keys(formData).forEach((key) => {
+      const field = key as keyof FormData;
+      if (!formData[field] || formData[field].toString().trim() === "") {
+        errors[field] = "This field is mandatory.";
+      }
+    });
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.EMAIL && !emailRegex.test(formData.EMAIL)) {
@@ -87,6 +101,12 @@ export default function App() {
     const ifscRegex = /^[A-Z]{4}[0-9]{1}[A-Z0-9]{6}$/;
     if (formData["IFSC Code"] && !ifscRegex.test(formData["IFSC Code"])) {
       errors["IFSC Code"] = "IFSC must be: 4 uppercase letters, 1 digit, 6 alphanumeric characters.";
+    }
+
+    // EHRMS CODE validation
+    const ehrmsRegex = /^[0-9]+$/;
+    if (formData["EHRMS CODE"] && !ehrmsRegex.test(formData["EHRMS CODE"])) {
+      errors["EHRMS CODE"] = "EHRMS CODE must be numeric.";
     }
 
     setFieldErrors(errors);
@@ -254,23 +274,26 @@ export default function App() {
                   </h3>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="NAME">Full Name</Label>
-                    <Input id="NAME" value={formData.NAME} readOnly className="bg-slate-50" />
+                    <Label htmlFor="NAME">Full Name <span className="text-red-500">*</span></Label>
+                    <Input id="NAME" value={formData.NAME} readOnly className={`bg-slate-50 ${fieldErrors.NAME ? 'border-red-500' : ''}`} />
+                    {fieldErrors.NAME && <p className="text-xs text-red-500 mt-1">{fieldErrors.NAME}</p>}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="SEX">Sex</Label>
-                      <Input id="SEX" value={formData.SEX} readOnly className="bg-slate-50" />
+                      <Label htmlFor="SEX">Sex <span className="text-red-500">*</span></Label>
+                      <Input id="SEX" value={formData.SEX} readOnly className={`bg-slate-50 ${fieldErrors.SEX ? 'border-red-500' : ''}`} />
+                      {fieldErrors.SEX && <p className="text-xs text-red-500 mt-1">{fieldErrors.SEX}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="AGE">Age</Label>
-                      <Input id="AGE" value={formData.AGE} readOnly className="bg-slate-50" />
+                      <Label htmlFor="AGE">Age <span className="text-red-500">*</span></Label>
+                      <Input id="AGE" value={formData.AGE} readOnly className={`bg-slate-50 ${fieldErrors.AGE ? 'border-red-500' : ''}`} />
+                      {fieldErrors.AGE && <p className="text-xs text-red-500 mt-1">{fieldErrors.AGE}</p>}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="EMAIL">Email Address</Label>
+                    <Label htmlFor="EMAIL">Email Address <span className="text-red-500">*</span></Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <Input 
@@ -291,26 +314,29 @@ export default function App() {
                   </h3>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="Designation">Designation</Label>
-                    <Input id="Designation" value={formData.Designation} readOnly className="bg-slate-50" />
+                    <Label htmlFor="Designation">Designation <span className="text-red-500">*</span></Label>
+                    <Input id="Designation" value={formData.Designation} readOnly className={`bg-slate-50 ${fieldErrors.Designation ? 'border-red-500' : ''}`} />
+                    {fieldErrors.Designation && <p className="text-xs text-red-500 mt-1">{fieldErrors.Designation}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="Office Name">Office Name</Label>
-                    <Input id="Office Name" value={formData["Office Name"]} readOnly className="bg-slate-50" />
+                    <Label htmlFor="Office Name">Office Name <span className="text-red-500">*</span></Label>
+                    <Input id="Office Name" value={formData["Office Name"]} readOnly className={`bg-slate-50 ${fieldErrors["Office Name"] ? 'border-red-500' : ''}`} />
+                    {fieldErrors["Office Name"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Office Name"]}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="Office Address with pin code">Office Address</Label>
+                    <Label htmlFor="Office Address with pin code">Office Address <span className="text-red-500">*</span></Label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
                       <textarea 
                         id="Office Address with pin code" 
                         readOnly 
-                        className="w-full min-h-[80px] rounded-md border border-slate-200 bg-slate-50 px-10 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        className={`w-full min-h-[80px] rounded-md border ${fieldErrors["Office Address with pin code"] ? 'border-red-500' : 'border-slate-200'} bg-slate-50 px-10 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
                         value={formData["Office Address with pin code"]}
                       />
                     </div>
+                    {fieldErrors["Office Address with pin code"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Office Address with pin code"]}</p>}
                   </div>
                 </div>
 
@@ -322,7 +348,7 @@ export default function App() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="PAN Number">PAN Number</Label>
+                      <Label htmlFor="PAN Number">PAN Number <span className="text-red-500">*</span></Label>
                       <Input 
                         id="PAN Number" 
                         className={fieldErrors["PAN Number"] ? 'border-red-500 focus:ring-red-500' : ''}
@@ -332,7 +358,7 @@ export default function App() {
                       {fieldErrors["PAN Number"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["PAN Number"]}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="Adhar Number">Aadhaar Number</Label>
+                      <Label htmlFor="Adhar Number">Aadhaar Number <span className="text-red-500">*</span></Label>
                       <Input 
                         id="Adhar Number" 
                         className={fieldErrors["Adhar Number"] ? 'border-red-500 focus:ring-red-500' : ''}
@@ -345,7 +371,7 @@ export default function App() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="Account Number">Account Number</Label>
+                      <Label htmlFor="Account Number">Account Number <span className="text-red-500">*</span></Label>
                       <Input 
                         id="Account Number" 
                         className={fieldErrors["Account Number"] ? 'border-red-500 focus:ring-red-500' : ''}
@@ -355,7 +381,7 @@ export default function App() {
                       {fieldErrors["Account Number"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Account Number"]}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="IFSC Code">IFSC Code</Label>
+                      <Label htmlFor="IFSC Code">IFSC Code <span className="text-red-500">*</span></Label>
                       <Input 
                         id="IFSC Code" 
                         className={fieldErrors["IFSC Code"] ? 'border-red-500 focus:ring-red-500' : ''}
@@ -363,6 +389,42 @@ export default function App() {
                         onChange={(e) => setFormData(prev => ({ ...prev, "IFSC Code": e.target.value.toUpperCase() }))}
                       />
                       {fieldErrors["IFSC Code"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["IFSC Code"]}</p>}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="BANK NAME">Bank Name <span className="text-red-500">*</span></Label>
+                      <Input 
+                        id="BANK NAME" 
+                        className={fieldErrors["BANK NAME"] ? 'border-red-500 focus:ring-red-500' : ''}
+                        value={formData["BANK NAME"]} 
+                        onChange={(e) => setFormData(prev => ({ ...prev, "BANK NAME": e.target.value.toUpperCase() }))}
+                      />
+                      {fieldErrors["BANK NAME"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["BANK NAME"]}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="BRANCH">Branch <span className="text-red-500">*</span></Label>
+                      <Input 
+                        id="BRANCH" 
+                        className={fieldErrors["BRANCH"] ? 'border-red-500 focus:ring-red-500' : ''}
+                        value={formData["BRANCH"]} 
+                        onChange={(e) => setFormData(prev => ({ ...prev, "BRANCH": e.target.value.toUpperCase() }))}
+                      />
+                      {fieldErrors["BRANCH"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["BRANCH"]}</p>}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="EHRMS CODE">EHRMS Code <span className="text-red-500">*</span></Label>
+                      <Input 
+                        id="EHRMS CODE" 
+                        className={fieldErrors["EHRMS CODE"] ? 'border-red-500 focus:ring-red-500' : ''}
+                        value={formData["EHRMS CODE"]} 
+                        onChange={(e) => setFormData(prev => ({ ...prev, "EHRMS CODE": e.target.value }))}
+                      />
+                      {fieldErrors["EHRMS CODE"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["EHRMS CODE"]}</p>}
                     </div>
                   </div>
                 </div>

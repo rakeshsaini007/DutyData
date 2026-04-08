@@ -3,14 +3,18 @@
  * 
  * Deployment Instructions:
  * 1. Open your Google Sheet.
- * 2. Go to Extensions > Apps Script.
- * 3. Paste this code into the editor.
- * 4. Click 'Deploy' > 'New Deployment'.
- * 5. Select 'Web App'.
- * 6. Set 'Execute as' to 'Me'.
- * 7. Set 'Who has access' to 'Anyone'.
- * 8. Click 'Deploy'.
- * 9. Copy the 'Web App URL' and paste it into APPS_SCRIPT_URL in src/App.tsx.
+ * 2. Ensure your sheet has the following headers in the first row:
+ *    NAME, EMAIL, MOBILE, SEX, AGE, Designation, Identity No, PAN Number, Office Name, 
+ *    Office Address with pin code, Land Line Number, Identity Name(Others), Adhar Number, 
+ *    Account Number, IFSC Code, BANK NAME, BRANCH, EHRMS CODE
+ * 3. Go to Extensions > Apps Script.
+ * 4. Paste this code into the editor.
+ * 5. Click 'Deploy' > 'New Deployment'.
+ * 6. Select 'Web App'.
+ * 7. Set 'Execute as' to 'Me'.
+ * 8. Set 'Who has access' to 'Anyone'.
+ * 9. Click 'Deploy'.
+ * 10. Copy the 'Web App URL' and paste it into APPS_SCRIPT_URL in src/App.tsx.
  * 
  * IMPORTANT: If you change the code, you must create a 'New Deployment' or 
  * update the existing one to 'New Version' for changes to take effect.
