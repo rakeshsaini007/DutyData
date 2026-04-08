@@ -1,0 +1,5 @@
+{
+  "name": "SheetSync Pro",
+  "description": "A data management portal that syncs with Google Sheets via Apps Script, featuring auto-fetch by mobile number and secure record updates.",
+  "requestFramePermissions": []
+}
