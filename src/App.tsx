@@ -173,50 +173,50 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-screen bg-slate-50 py-6 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <Toaster position="top-center" />
       
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-4">
+        <div className="text-center mb-6 sm:mb-10">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl mb-2 sm:mb-4">
             SheetSync Pro
           </h1>
-          <p className="text-lg text-slate-600">
+          <p className="text-base sm:text-lg text-slate-600 px-4">
             Securely manage and sync your personnel data with Google Sheets.
           </p>
         </div>
 
-        <Card className="shadow-xl border-slate-200 overflow-hidden">
-          <CardHeader className="bg-slate-900 text-white p-8">
-            <div className="flex items-center justify-between">
+        <Card className="shadow-xl border-slate-200 overflow-hidden rounded-xl sm:rounded-2xl">
+          <CardHeader className="bg-slate-900 text-white p-5 sm:p-8">
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <CardTitle className="text-2xl font-semibold">Data Management Portal</CardTitle>
-                <CardDescription className="text-slate-300 mt-2">
+                <CardTitle className="text-xl sm:text-2xl font-semibold">Data Management Portal</CardTitle>
+                <CardDescription className="text-slate-300 mt-1 sm:mt-2 text-sm sm:text-base">
                   Enter mobile number to fetch or update records
                 </CardDescription>
               </div>
-              <div className="bg-slate-800 p-3 rounded-full">
-                <RefreshCw className={`w-6 h-6 ${loading ? 'animate-spin' : ''}`} />
+              <div className="bg-slate-800 p-2 sm:p-3 rounded-full shrink-0">
+                <RefreshCw className={`w-5 h-5 sm:w-6 sm:h-6 ${loading ? 'animate-spin' : ''}`} />
               </div>
             </div>
           </CardHeader>
 
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
+          <CardContent className="p-5 sm:p-8">
+            <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
               {/* Mobile Number Section */}
-              <div className="bg-slate-50 p-6 rounded-xl border border-slate-100">
+              <div className="bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-100">
                 <div className="max-w-md">
-                  <Label htmlFor="MOBILE" className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-2 block">
+                  <Label htmlFor="MOBILE" className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2 block">
                     Mobile Number
                   </Label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
                       <Input
                         id="MOBILE"
                         type="tel"
-                        placeholder="Enter 10-digit mobile number"
-                        className="pl-10 h-12 text-lg border-slate-300 focus:ring-slate-900 focus:border-slate-900"
+                        placeholder="10-digit mobile"
+                        className="pl-9 sm:pl-10 h-11 sm:h-12 text-base sm:text-lg border-slate-300 focus:ring-slate-900 focus:border-slate-900"
                         value={formData.MOBILE}
                         onChange={handleMobileChange}
                         required
@@ -225,14 +225,14 @@ export default function App() {
                     <Button 
                       type="button" 
                       variant="outline" 
-                      className="h-12 px-4 border-slate-300 hover:bg-slate-100"
+                      className="h-11 sm:h-12 px-3 sm:px-4 border-slate-300 hover:bg-slate-100"
                       onClick={() => fetchData(formData.MOBILE)}
                       disabled={loading || formData.MOBILE.length < 10}
                     >
-                      <Search className="w-5 h-5" />
+                      <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                     </Button>
                   </div>
-                  <p className="mt-2 text-xs text-slate-400">
+                  <p className="mt-2 text-[10px] sm:text-xs text-slate-400">
                     Data will auto-fetch once 10 digits are entered.
                   </p>
                 </div>
@@ -368,11 +368,11 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-slate-100 flex justify-end">
+              <div className="pt-6 border-t border-slate-100 flex justify-center sm:justify-end">
                 <Button 
                   type="submit" 
                   disabled={loading || !formData.MOBILE}
-                  className="h-12 px-8 text-lg font-semibold bg-slate-900 hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl active:scale-95"
+                  className="w-full sm:w-auto h-12 px-8 text-lg font-semibold bg-slate-900 hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl active:scale-95"
                 >
                   {loading ? (
                     <>
@@ -395,9 +395,9 @@ export default function App() {
             </form>
           </CardContent>
           
-          <CardFooter className="bg-slate-50 p-6 border-t border-slate-200 justify-center">
-            <p className="text-sm text-slate-500 flex items-center gap-2">
-              <CreditCard className="w-4 h-4" /> All data is securely synced with your Google Sheet
+          <CardFooter className="bg-slate-50 p-4 sm:p-6 border-t border-slate-200 justify-center">
+            <p className="text-xs sm:text-sm text-slate-500 flex items-center gap-2 text-center">
+              <CreditCard className="w-4 h-4 shrink-0" /> All data is securely synced with your Google Sheet
             </p>
           </CardFooter>
         </Card>
