@@ -223,7 +223,7 @@ export default function App() {
 
     // For existing records, these fields are readonly
     const readonlyFields: (keyof FormData)[] = [
-      "NAME", "SEX", "Designation", 
+      "NAME", "Designation", 
       "Office Name", "Office Address with pin code"
     ];
     return readonlyFields.includes(field);
@@ -327,13 +327,17 @@ export default function App() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="SEX">Sex <span className="text-red-500">*</span></Label>
-                        <Input 
-                          id="SEX" 
-                          value={formData.SEX} 
-                          readOnly={isReadOnly("SEX")} 
-                          className={`${isReadOnly("SEX") ? 'bg-slate-50' : ''} ${fieldErrors.SEX ? 'border-red-500' : ''}`}
+                        <select
+                          id="SEX"
+                          disabled={isReadOnly("SEX")}
+                          className={`flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${isReadOnly("SEX") ? 'bg-slate-50' : ''} ${fieldErrors.SEX ? 'border-red-500' : ''}`}
+                          value={formData.SEX}
                           onChange={(e) => setFormData(prev => ({ ...prev, SEX: e.target.value }))}
-                        />
+                        >
+                          <option value="">Select Sex</option>
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                        </select>
                         {fieldErrors.SEX && <p className="text-xs text-red-500 mt-1">{fieldErrors.SEX}</p>}
                       </div>
                       <div className="space-y-2">
