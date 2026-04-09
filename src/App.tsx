@@ -20,18 +20,16 @@ interface FormData {
   SEX: string;
   AGE: string;
   Designation: string;
-  "Identity No": string;
   "PAN Number": string;
   "Office Name": string;
   "Office Address with pin code": string;
-  "Land Line Number": string;
-  "Identity Name(Others)": string;
   "Adhar Number": string;
   "Account Number": string;
   "IFSC Code": string;
   "BANK NAME": string;
   "BRANCH": string;
   "EHRMS CODE": string;
+  MasterFilter: string;
 }
 
 const initialFormData: FormData = {
@@ -41,18 +39,16 @@ const initialFormData: FormData = {
   SEX: "",
   AGE: "",
   Designation: "",
-  "Identity No": "",
   "PAN Number": "",
   "Office Name": "",
   "Office Address with pin code": "",
-  "Land Line Number": "",
-  "Identity Name(Others)": "",
   "Adhar Number": "",
   "Account Number": "",
   "IFSC Code": "",
   "BANK NAME": "",
   "BRANCH": "",
   "EHRMS CODE": "",
+  MasterFilter: "",
 };
 
 export default function App() {
@@ -68,6 +64,7 @@ export default function App() {
     // Mandatory check for all fields
     Object.keys(formData).forEach((key) => {
       const field = key as keyof FormData;
+      if (field === "MasterFilter") return; // Skip hidden field
       if (!formData[field] || formData[field].toString().trim() === "") {
         errors[field] = "This field is mandatory.";
       }
@@ -184,10 +181,13 @@ export default function App() {
   };
 
   const isReadOnly = (field: keyof FormData) => {
+    // If it's a new record, nothing is readonly
+    if (!isExisting) return false;
+    
+    // For existing records, these fields are readonly
     const readonlyFields: (keyof FormData)[] = [
-      "NAME", "SEX", "Designation", "Identity No", 
-      "Office Name", "Office Address with pin code", 
-      "Land Line Number", "Identity Name(Others)"
+      "NAME", "SEX", "Designation", 
+      "Office Name", "Office Address with pin code"
     ];
     return readonlyFields.includes(field);
   };
@@ -275,19 +275,40 @@ export default function App() {
                   
                   <div className="space-y-2">
                     <Label htmlFor="NAME">Full Name <span className="text-red-500">*</span></Label>
-                    <Input id="NAME" value={formData.NAME} readOnly className={`bg-slate-50 ${fieldErrors.NAME ? 'border-red-500' : ''}`} />
+                    <Input 
+                      id="NAME" 
+                      value={formData.NAME} 
+                      readOnly={isReadOnly("NAME")} 
+                      className={`${isReadOnly("NAME") ? 'bg-slate-50' : ''} ${fieldErrors.NAME ? 'border-red-500' : ''}`}
+                      onChange={(e) => setFormData(prev => ({ ...prev, NAME: e.target.value }))}
+                    />
                     {fieldErrors.NAME && <p className="text-xs text-red-500 mt-1">{fieldErrors.NAME}</p>}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="SEX">Sex <span className="text-red-500">*</span></Label>
-                      <Input id="SEX" value={formData.SEX} readOnly className={`bg-slate-50 ${fieldErrors.SEX ? 'border-red-500' : ''}`} />
+                      <Input 
+                        id="SEX" 
+                        value={formData.SEX} 
+                        readOnly={isReadOnly("SEX")} 
+                        className={`${isReadOnly("SEX") ? 'bg-slate-50' : ''} ${fieldErrors.SEX ? 'border-red-500' : ''}`}
+                        onChange={(e) => setFormData(prev => ({ ...prev, SEX: e.target.value }))}
+                      />
                       {fieldErrors.SEX && <p className="text-xs text-red-500 mt-1">{fieldErrors.SEX}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="AGE">Age <span className="text-red-500">*</span></Label>
-                      <Input id="AGE" value={formData.AGE} readOnly className={`bg-slate-50 ${fieldErrors.AGE ? 'border-red-500' : ''}`} />
+                      <Input 
+                        id="AGE" 
+                        type="number"
+                        min="0"
+                        max="120"
+                        value={formData.AGE} 
+                        readOnly={isReadOnly("AGE")} 
+                        className={`${isReadOnly("AGE") ? 'bg-slate-50' : ''} ${fieldErrors.AGE ? 'border-red-500' : ''}`}
+                        onChange={(e) => setFormData(prev => ({ ...prev, AGE: e.target.value }))}
+                      />
                       {fieldErrors.AGE && <p className="text-xs text-red-500 mt-1">{fieldErrors.AGE}</p>}
                     </div>
                   </div>
@@ -315,13 +336,25 @@ export default function App() {
                   
                   <div className="space-y-2">
                     <Label htmlFor="Designation">Designation <span className="text-red-500">*</span></Label>
-                    <Input id="Designation" value={formData.Designation} readOnly className={`bg-slate-50 ${fieldErrors.Designation ? 'border-red-500' : ''}`} />
+                    <Input 
+                      id="Designation" 
+                      value={formData.Designation} 
+                      readOnly={isReadOnly("Designation")} 
+                      className={`${isReadOnly("Designation") ? 'bg-slate-50' : ''} ${fieldErrors.Designation ? 'border-red-500' : ''}`}
+                      onChange={(e) => setFormData(prev => ({ ...prev, Designation: e.target.value }))}
+                    />
                     {fieldErrors.Designation && <p className="text-xs text-red-500 mt-1">{fieldErrors.Designation}</p>}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="Office Name">Office Name <span className="text-red-500">*</span></Label>
-                    <Input id="Office Name" value={formData["Office Name"]} readOnly className={`bg-slate-50 ${fieldErrors["Office Name"] ? 'border-red-500' : ''}`} />
+                    <Input 
+                      id="Office Name" 
+                      value={formData["Office Name"]} 
+                      readOnly={isReadOnly("Office Name")} 
+                      className={`${isReadOnly("Office Name") ? 'bg-slate-50' : ''} ${fieldErrors["Office Name"] ? 'border-red-500' : ''}`}
+                      onChange={(e) => setFormData(prev => ({ ...prev, "Office Name": e.target.value }))}
+                    />
                     {fieldErrors["Office Name"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Office Name"]}</p>}
                   </div>
 
@@ -331,9 +364,10 @@ export default function App() {
                       <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
                       <textarea 
                         id="Office Address with pin code" 
-                        readOnly 
-                        className={`w-full min-h-[80px] rounded-md border ${fieldErrors["Office Address with pin code"] ? 'border-red-500' : 'border-slate-200'} bg-slate-50 px-10 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
+                        readOnly={isReadOnly("Office Address with pin code")} 
+                        className={`w-full min-h-[80px] rounded-md border ${fieldErrors["Office Address with pin code"] ? 'border-red-500' : 'border-slate-200'} ${isReadOnly("Office Address with pin code") ? 'bg-slate-50' : ''} px-10 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
                         value={formData["Office Address with pin code"]}
+                        onChange={(e) => setFormData(prev => ({ ...prev, "Office Address with pin code": e.target.value }))}
                       />
                     </div>
                     {fieldErrors["Office Address with pin code"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Office Address with pin code"]}</p>}

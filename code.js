@@ -4,9 +4,9 @@
  * Deployment Instructions:
  * 1. Open your Google Sheet.
  * 2. Ensure your sheet has the following headers in the first row:
- *    NAME, EMAIL, MOBILE, SEX, AGE, Designation, Identity No, PAN Number, Office Name, 
- *    Office Address with pin code, Land Line Number, Identity Name(Others), Adhar Number, 
- *    Account Number, IFSC Code, BANK NAME, BRANCH, EHRMS CODE
+ *    NAME, EMAIL, MOBILE, SEX, AGE, Designation, PAN Number, Office Name, 
+ *    Office Address with pin code, Adhar Number, Account Number, IFSC Code, 
+ *    BANK NAME, BRANCH, EHRMS CODE, MasterFilter
  * 3. Go to Extensions > Apps Script.
  * 4. Paste this code into the editor.
  * 5. Click 'Deploy' > 'New Deployment'.
