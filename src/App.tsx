@@ -126,11 +126,15 @@ export default function App() {
   };
 
   const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const value = e.target.value.replace(/\D/g, '').slice(0, 10);
     setFormData(prev => ({ ...prev, MOBILE: value }));
     
-    // Auto-fetch if mobile number is 10 digits
-    if (value.length === 10) {
+    // Reset state if mobile is not 10 digits
+    if (value.length !== 10) {
+      setIsExisting(false);
+      setError(null);
+      setFieldErrors({});
+    } else {
       fetchData(value);
     }
   };
@@ -174,6 +178,11 @@ export default function App() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!isExisting) {
+      toast.error("Access Denied: This mobile number is not registered in our records.");
+      return;
+    }
+
     if (!validate()) {
       toast.error("Please fix the errors in the form before submitting.");
       return;
@@ -208,8 +217,9 @@ export default function App() {
     // If it's a new record, nothing is readonly
     if (!isExisting) return false;
     
-    // If the field is currently empty, allow editing even if it's normally readonly
+    // If the field is currently empty or has a validation error, allow editing
     if (!formData[field] || formData[field].toString().trim() === "") return false;
+    if (fieldErrors[field]) return false;
 
     // For existing records, these fields are readonly
     const readonlyFields: (keyof FormData)[] = [
@@ -294,228 +304,241 @@ export default function App() {
               )}
 
               {/* Data Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Personal Info */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                    <User className="w-5 h-5" /> Personal Information
-                  </h3>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="NAME">Full Name <span className="text-red-500">*</span></Label>
-                    <Input 
-                      id="NAME" 
-                      value={formData.NAME} 
-                      readOnly={isReadOnly("NAME")} 
-                      className={`${isReadOnly("NAME") ? 'bg-slate-50' : ''} ${fieldErrors.NAME ? 'border-red-500' : ''}`}
-                      onChange={(e) => setFormData(prev => ({ ...prev, NAME: e.target.value }))}
-                    />
-                    {fieldErrors.NAME && <p className="text-xs text-red-500 mt-1">{fieldErrors.NAME}</p>}
+              {isExisting ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {/* Personal Info */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                      <User className="w-5 h-5" /> Personal Information
+                    </h3>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="NAME">Full Name <span className="text-red-500">*</span></Label>
+                      <Input 
+                        id="NAME" 
+                        value={formData.NAME} 
+                        readOnly={isReadOnly("NAME")} 
+                        className={`${isReadOnly("NAME") ? 'bg-slate-50' : ''} ${fieldErrors.NAME ? 'border-red-500' : ''}`}
+                        onChange={(e) => setFormData(prev => ({ ...prev, NAME: e.target.value }))}
+                      />
+                      {fieldErrors.NAME && <p className="text-xs text-red-500 mt-1">{fieldErrors.NAME}</p>}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="SEX">Sex <span className="text-red-500">*</span></Label>
+                        <Input 
+                          id="SEX" 
+                          value={formData.SEX} 
+                          readOnly={isReadOnly("SEX")} 
+                          className={`${isReadOnly("SEX") ? 'bg-slate-50' : ''} ${fieldErrors.SEX ? 'border-red-500' : ''}`}
+                          onChange={(e) => setFormData(prev => ({ ...prev, SEX: e.target.value }))}
+                        />
+                        {fieldErrors.SEX && <p className="text-xs text-red-500 mt-1">{fieldErrors.SEX}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="AGE">Age <span className="text-red-500">*</span></Label>
+                        <Input 
+                          id="AGE" 
+                          type="number"
+                          min="0"
+                          max="120"
+                          value={formData.AGE} 
+                          readOnly={isReadOnly("AGE")} 
+                          className={`${isReadOnly("AGE") ? 'bg-slate-50' : ''} ${fieldErrors.AGE ? 'border-red-500' : ''}`}
+                          onChange={(e) => setFormData(prev => ({ ...prev, AGE: e.target.value }))}
+                        />
+                        {fieldErrors.AGE && <p className="text-xs text-red-500 mt-1">{fieldErrors.AGE}</p>}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="EMAIL">Email Address <span className="text-red-500">*</span></Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input 
+                          id="EMAIL" 
+                          className={`pl-10 ${fieldErrors.EMAIL ? 'border-red-500 focus:ring-red-500' : ''}`}
+                          value={formData.EMAIL} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, EMAIL: e.target.value }))}
+                        />
+                      </div>
+                      {fieldErrors.EMAIL && <p className="text-xs text-red-500 mt-1">{fieldErrors.EMAIL}</p>}
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* Professional Info */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                      <Building2 className="w-5 h-5" /> Professional Details
+                    </h3>
+                    
                     <div className="space-y-2">
-                      <Label htmlFor="SEX">Sex <span className="text-red-500">*</span></Label>
+                      <Label htmlFor="Designation">Designation <span className="text-red-500">*</span></Label>
                       <Input 
-                        id="SEX" 
-                        value={formData.SEX} 
-                        readOnly={isReadOnly("SEX")} 
-                        className={`${isReadOnly("SEX") ? 'bg-slate-50' : ''} ${fieldErrors.SEX ? 'border-red-500' : ''}`}
-                        onChange={(e) => setFormData(prev => ({ ...prev, SEX: e.target.value }))}
+                        id="Designation" 
+                        value={formData.Designation} 
+                        readOnly={isReadOnly("Designation")} 
+                        className={`${isReadOnly("Designation") ? 'bg-slate-50' : ''} ${fieldErrors.Designation ? 'border-red-500' : ''}`}
+                        onChange={(e) => setFormData(prev => ({ ...prev, Designation: e.target.value }))}
                       />
-                      {fieldErrors.SEX && <p className="text-xs text-red-500 mt-1">{fieldErrors.SEX}</p>}
+                      {fieldErrors.Designation && <p className="text-xs text-red-500 mt-1">{fieldErrors.Designation}</p>}
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="AGE">Age <span className="text-red-500">*</span></Label>
+                      <Label htmlFor="Office Name">Office Name <span className="text-red-500">*</span></Label>
                       <Input 
-                        id="AGE" 
-                        type="number"
-                        min="0"
-                        max="120"
-                        value={formData.AGE} 
-                        readOnly={isReadOnly("AGE")} 
-                        className={`${isReadOnly("AGE") ? 'bg-slate-50' : ''} ${fieldErrors.AGE ? 'border-red-500' : ''}`}
-                        onChange={(e) => setFormData(prev => ({ ...prev, AGE: e.target.value }))}
+                        id="Office Name" 
+                        value={formData["Office Name"]} 
+                        readOnly={isReadOnly("Office Name")} 
+                        className={`${isReadOnly("Office Name") ? 'bg-slate-50' : ''} ${fieldErrors["Office Name"] ? 'border-red-500' : ''}`}
+                        onChange={(e) => setFormData(prev => ({ ...prev, "Office Name": e.target.value }))}
                       />
-                      {fieldErrors.AGE && <p className="text-xs text-red-500 mt-1">{fieldErrors.AGE}</p>}
+                      {fieldErrors["Office Name"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Office Name"]}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="Office Address with pin code">Office Address <span className="text-red-500">*</span></Label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                        <textarea 
+                          id="Office Address with pin code" 
+                          readOnly={isReadOnly("Office Address with pin code")} 
+                          className={`w-full min-h-[80px] rounded-md border ${fieldErrors["Office Address with pin code"] ? 'border-red-500' : 'border-slate-200'} ${isReadOnly("Office Address with pin code") ? 'bg-slate-50' : ''} px-10 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
+                          value={formData["Office Address with pin code"]}
+                          onChange={(e) => setFormData(prev => ({ ...prev, "Office Address with pin code": e.target.value }))}
+                        />
+                      </div>
+                      {fieldErrors["Office Address with pin code"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Office Address with pin code"]}</p>}
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="EMAIL">Email Address <span className="text-red-500">*</span></Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <Input 
-                        id="EMAIL" 
-                        className={`pl-10 ${fieldErrors.EMAIL ? 'border-red-500 focus:ring-red-500' : ''}`}
-                        value={formData.EMAIL} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, EMAIL: e.target.value }))}
-                      />
+                  {/* Identity & Banking */}
+                  <div className="space-y-4 md:col-span-2">
+                    <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                      <CreditCard className="w-5 h-5" /> Identity & Banking
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="PAN Number">PAN Number <span className="text-red-500">*</span></Label>
+                        <Input 
+                          id="PAN Number" 
+                          className={fieldErrors["PAN Number"] ? 'border-red-500 focus:ring-red-500' : ''}
+                          value={formData["PAN Number"]} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, "PAN Number": e.target.value.toUpperCase() }))}
+                        />
+                        {fieldErrors["PAN Number"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["PAN Number"]}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="Adhar Number">Aadhaar Number <span className="text-red-500">*</span></Label>
+                        <Input 
+                          id="Adhar Number" 
+                          className={fieldErrors["Adhar Number"] ? 'border-red-500 focus:ring-red-500' : ''}
+                          value={formData["Adhar Number"]} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, "Adhar Number": e.target.value }))}
+                        />
+                        {fieldErrors["Adhar Number"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Adhar Number"]}</p>}
+                      </div>
                     </div>
-                    {fieldErrors.EMAIL && <p className="text-xs text-red-500 mt-1">{fieldErrors.EMAIL}</p>}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="Account Number">Account Number <span className="text-red-500">*</span></Label>
+                        <Input 
+                          id="Account Number" 
+                          className={fieldErrors["Account Number"] ? 'border-red-500 focus:ring-red-500' : ''}
+                          value={formData["Account Number"]} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, "Account Number": e.target.value }))}
+                        />
+                        {fieldErrors["Account Number"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Account Number"]}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="IFSC Code">IFSC Code <span className="text-red-500">*</span></Label>
+                        <Input 
+                          id="IFSC Code" 
+                          className={fieldErrors["IFSC Code"] ? 'border-red-500 focus:ring-red-500' : ''}
+                          value={formData["IFSC Code"]} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, "IFSC Code": e.target.value.toUpperCase() }))}
+                        />
+                        {fieldErrors["IFSC Code"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["IFSC Code"]}</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="BANK NAME">Bank Name <span className="text-red-500">*</span></Label>
+                        <Input 
+                          id="BANK NAME" 
+                          className={fieldErrors["BANK NAME"] ? 'border-red-500 focus:ring-red-500' : ''}
+                          value={formData["BANK NAME"]} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, "BANK NAME": e.target.value.toUpperCase() }))}
+                        />
+                        {fieldErrors["BANK NAME"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["BANK NAME"]}</p>}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="BRANCH">Branch <span className="text-red-500">*</span></Label>
+                        <Input 
+                          id="BRANCH" 
+                          className={fieldErrors["BRANCH"] ? 'border-red-500 focus:ring-red-500' : ''}
+                          value={formData["BRANCH"]} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, "BRANCH": e.target.value.toUpperCase() }))}
+                        />
+                        {fieldErrors["BRANCH"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["BRANCH"]}</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="EHRMS CODE">EHRMS Code <span className="text-red-500">*</span></Label>
+                        <Input 
+                          id="EHRMS CODE" 
+                          className={fieldErrors["EHRMS CODE"] ? 'border-red-500 focus:ring-red-500' : ''}
+                          value={formData["EHRMS CODE"]} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, "EHRMS CODE": e.target.value }))}
+                        />
+                        {fieldErrors["EHRMS CODE"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["EHRMS CODE"]}</p>}
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                {/* Professional Info */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                    <Building2 className="w-5 h-5" /> Professional Details
-                  </h3>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="Designation">Designation <span className="text-red-500">*</span></Label>
-                    <Input 
-                      id="Designation" 
-                      value={formData.Designation} 
-                      readOnly={isReadOnly("Designation")} 
-                      className={`${isReadOnly("Designation") ? 'bg-slate-50' : ''} ${fieldErrors.Designation ? 'border-red-500' : ''}`}
-                      onChange={(e) => setFormData(prev => ({ ...prev, Designation: e.target.value }))}
-                    />
-                    {fieldErrors.Designation && <p className="text-xs text-red-500 mt-1">{fieldErrors.Designation}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="Office Name">Office Name <span className="text-red-500">*</span></Label>
-                    <Input 
-                      id="Office Name" 
-                      value={formData["Office Name"]} 
-                      readOnly={isReadOnly("Office Name")} 
-                      className={`${isReadOnly("Office Name") ? 'bg-slate-50' : ''} ${fieldErrors["Office Name"] ? 'border-red-500' : ''}`}
-                      onChange={(e) => setFormData(prev => ({ ...prev, "Office Name": e.target.value }))}
-                    />
-                    {fieldErrors["Office Name"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Office Name"]}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="Office Address with pin code">Office Address <span className="text-red-500">*</span></Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                      <textarea 
-                        id="Office Address with pin code" 
-                        readOnly={isReadOnly("Office Address with pin code")} 
-                        className={`w-full min-h-[80px] rounded-md border ${fieldErrors["Office Address with pin code"] ? 'border-red-500' : 'border-slate-200'} ${isReadOnly("Office Address with pin code") ? 'bg-slate-50' : ''} px-10 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50`}
-                        value={formData["Office Address with pin code"]}
-                        onChange={(e) => setFormData(prev => ({ ...prev, "Office Address with pin code": e.target.value }))}
-                      />
-                    </div>
-                    {fieldErrors["Office Address with pin code"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Office Address with pin code"]}</p>}
-                  </div>
+              ) : formData.MOBILE.length === 10 && !loading ? (
+                <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl text-center animate-in zoom-in-95 duration-300">
+                  <Hash className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-bold text-amber-900 mb-2">Access Restricted</h3>
+                  <p className="text-amber-700">
+                    This mobile number is not registered in our database. 
+                    Please contact the administrator to register your number.
+                  </p>
                 </div>
-
-                {/* Identity & Banking */}
-                <div className="space-y-4 md:col-span-2">
-                  <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-                    <CreditCard className="w-5 h-5" /> Identity & Banking
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="PAN Number">PAN Number <span className="text-red-500">*</span></Label>
-                      <Input 
-                        id="PAN Number" 
-                        className={fieldErrors["PAN Number"] ? 'border-red-500 focus:ring-red-500' : ''}
-                        value={formData["PAN Number"]} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, "PAN Number": e.target.value.toUpperCase() }))}
-                      />
-                      {fieldErrors["PAN Number"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["PAN Number"]}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="Adhar Number">Aadhaar Number <span className="text-red-500">*</span></Label>
-                      <Input 
-                        id="Adhar Number" 
-                        className={fieldErrors["Adhar Number"] ? 'border-red-500 focus:ring-red-500' : ''}
-                        value={formData["Adhar Number"]} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, "Adhar Number": e.target.value }))}
-                      />
-                      {fieldErrors["Adhar Number"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Adhar Number"]}</p>}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="Account Number">Account Number <span className="text-red-500">*</span></Label>
-                      <Input 
-                        id="Account Number" 
-                        className={fieldErrors["Account Number"] ? 'border-red-500 focus:ring-red-500' : ''}
-                        value={formData["Account Number"]} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, "Account Number": e.target.value }))}
-                      />
-                      {fieldErrors["Account Number"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["Account Number"]}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="IFSC Code">IFSC Code <span className="text-red-500">*</span></Label>
-                      <Input 
-                        id="IFSC Code" 
-                        className={fieldErrors["IFSC Code"] ? 'border-red-500 focus:ring-red-500' : ''}
-                        value={formData["IFSC Code"]} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, "IFSC Code": e.target.value.toUpperCase() }))}
-                      />
-                      {fieldErrors["IFSC Code"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["IFSC Code"]}</p>}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="BANK NAME">Bank Name <span className="text-red-500">*</span></Label>
-                      <Input 
-                        id="BANK NAME" 
-                        className={fieldErrors["BANK NAME"] ? 'border-red-500 focus:ring-red-500' : ''}
-                        value={formData["BANK NAME"]} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, "BANK NAME": e.target.value.toUpperCase() }))}
-                      />
-                      {fieldErrors["BANK NAME"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["BANK NAME"]}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="BRANCH">Branch <span className="text-red-500">*</span></Label>
-                      <Input 
-                        id="BRANCH" 
-                        className={fieldErrors["BRANCH"] ? 'border-red-500 focus:ring-red-500' : ''}
-                        value={formData["BRANCH"]} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, "BRANCH": e.target.value.toUpperCase() }))}
-                      />
-                      {fieldErrors["BRANCH"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["BRANCH"]}</p>}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="EHRMS CODE">EHRMS Code <span className="text-red-500">*</span></Label>
-                      <Input 
-                        id="EHRMS CODE" 
-                        className={fieldErrors["EHRMS CODE"] ? 'border-red-500 focus:ring-red-500' : ''}
-                        value={formData["EHRMS CODE"]} 
-                        onChange={(e) => setFormData(prev => ({ ...prev, "EHRMS CODE": e.target.value }))}
-                      />
-                      {fieldErrors["EHRMS CODE"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["EHRMS CODE"]}</p>}
-                    </div>
-                  </div>
+              ) : (
+                <div className="bg-slate-50 border border-dashed border-slate-200 p-12 rounded-xl text-center">
+                  <Phone className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-500">Enter a registered mobile number to access the form.</p>
                 </div>
-              </div>
+              )}
 
-              <div className="pt-6 border-t border-slate-100 flex justify-center sm:justify-end">
-                <Button 
-                  type="submit" 
-                  disabled={loading || !formData.MOBILE}
-                  className="w-full sm:w-auto h-12 px-8 text-lg font-semibold bg-slate-900 hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl active:scale-95"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Processing...
-                    </>
-                  ) : isExisting ? (
-                    <>
-                      <RefreshCw className="mr-2 h-5 w-5" />
-                      Update Record
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-5 w-5" />
-                      Submit New Record
-                    </>
-                  )}
-                </Button>
-              </div>
+              {isExisting && (
+                <div className="pt-6 border-t border-slate-100 flex justify-center sm:justify-end">
+                  <Button 
+                    type="submit" 
+                    disabled={loading}
+                    className="w-full sm:w-auto h-12 px-8 text-lg font-semibold bg-slate-900 hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl active:scale-95"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="mr-2 h-5 w-5" />
+                        Update Record
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </form>
           </CardContent>
           
