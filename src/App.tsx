@@ -61,49 +61,64 @@ export default function App() {
   const validate = (): boolean => {
     const errors: Partial<Record<keyof FormData, string>> = {};
     
-    // Mandatory check for all fields
-    Object.keys(formData).forEach((key) => {
+    // Mandatory check for fields defined in initialFormData
+    Object.keys(initialFormData).forEach((key) => {
       const field = key as keyof FormData;
       if (field === "MasterFilter") return; // Skip hidden field
-      if (!formData[field] || formData[field].toString().trim() === "") {
+      
+      const value = formData[field]?.toString().trim() || "";
+      if (value === "") {
         errors[field] = "This field is mandatory.";
       }
     });
 
+    // Mobile validation
+    const mobileRegex = /^[0-9]{10}$/;
+    const mobile = formData.MOBILE?.toString().trim() || "";
+    if (mobile !== "" && !mobileRegex.test(mobile)) {
+      errors.MOBILE = "Must be exactly 10 digits.";
+    }
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.EMAIL && !emailRegex.test(formData.EMAIL)) {
+    const email = formData.EMAIL?.toString().trim() || "";
+    if (email !== "" && !emailRegex.test(email)) {
       errors.EMAIL = "Please enter a valid email address.";
     }
 
     // PAN Number validation
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    if (formData["PAN Number"] && !panRegex.test(formData["PAN Number"])) {
-      errors["PAN Number"] = "PAN must be: 5 uppercase letters, 4 digits, 1 uppercase letter (e.g., ABCDE1234F).";
+    const pan = formData["PAN Number"]?.toString().trim() || "";
+    if (pan !== "" && !panRegex.test(pan)) {
+      errors["PAN Number"] = "Format: 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F)";
     }
 
     // Adhar Number validation
     const adharRegex = /^[0-9]{12}$/;
-    if (formData["Adhar Number"] && !adharRegex.test(formData["Adhar Number"])) {
-      errors["Adhar Number"] = "Aadhaar number must be exactly 12 digits.";
+    const adhar = formData["Adhar Number"]?.toString().trim() || "";
+    if (adhar !== "" && !adharRegex.test(adhar)) {
+      errors["Adhar Number"] = "Must be exactly 12 digits.";
     }
 
     // Account Number validation
     const accountRegex = /^[0-9]{11,}$/;
-    if (formData["Account Number"] && !accountRegex.test(formData["Account Number"])) {
-      errors["Account Number"] = "Account number must be numeric and greater than 10 digits.";
+    const account = formData["Account Number"]?.toString().trim() || "";
+    if (account !== "" && !accountRegex.test(account)) {
+      errors["Account Number"] = "Must be numeric and 11+ digits.";
     }
 
     // IFSC Code validation
     const ifscRegex = /^[A-Z]{4}[0-9]{1}[A-Z0-9]{6}$/;
-    if (formData["IFSC Code"] && !ifscRegex.test(formData["IFSC Code"])) {
-      errors["IFSC Code"] = "IFSC must be: 4 uppercase letters, 1 digit, 6 alphanumeric characters.";
+    const ifsc = formData["IFSC Code"]?.toString().trim() || "";
+    if (ifsc !== "" && !ifscRegex.test(ifsc)) {
+      errors["IFSC Code"] = "Format: 4 letters, 1 zero, 6 alphanumeric.";
     }
 
     // EHRMS CODE validation
     const ehrmsRegex = /^[0-9]+$/;
-    if (formData["EHRMS CODE"] && !ehrmsRegex.test(formData["EHRMS CODE"])) {
-      errors["EHRMS CODE"] = "EHRMS CODE must be numeric.";
+    const ehrms = formData["EHRMS CODE"]?.toString().trim() || "";
+    if (ehrms !== "" && !ehrmsRegex.test(ehrms)) {
+      errors["EHRMS CODE"] = "Must be numeric.";
     }
 
     setFieldErrors(errors);
@@ -127,7 +142,16 @@ export default function App() {
       const response = await axios.get(`${APPS_SCRIPT_URL}?mobile=${mobile}`);
       if (response.data.success) {
         if (response.data.exists) {
-          setFormData(response.data.data);
+          // Filter fetched data to only include known fields
+          const fetchedData = response.data.data;
+          const filteredData: Partial<FormData> = {};
+          Object.keys(initialFormData).forEach(key => {
+            if (Object.prototype.hasOwnProperty.call(fetchedData, key)) {
+              filteredData[key as keyof FormData] = fetchedData[key];
+            }
+          });
+          
+          setFormData(prev => ({ ...prev, ...filteredData }));
           setIsExisting(true);
           toast.success("Data fetched successfully!");
         } else {
@@ -184,6 +208,9 @@ export default function App() {
     // If it's a new record, nothing is readonly
     if (!isExisting) return false;
     
+    // If the field is currently empty, allow editing even if it's normally readonly
+    if (!formData[field] || formData[field].toString().trim() === "") return false;
+
     // For existing records, these fields are readonly
     const readonlyFields: (keyof FormData)[] = [
       "NAME", "SEX", "Designation", 
@@ -236,7 +263,7 @@ export default function App() {
                         id="MOBILE"
                         type="tel"
                         placeholder="10-digit mobile"
-                        className="pl-9 sm:pl-10 h-11 sm:h-12 text-base sm:text-lg border-slate-300 focus:ring-slate-900 focus:border-slate-900"
+                        className={`pl-9 sm:pl-10 h-11 sm:h-12 text-base sm:text-lg border-slate-300 focus:ring-slate-900 focus:border-slate-900 ${fieldErrors.MOBILE ? 'border-red-500' : ''}`}
                         value={formData.MOBILE}
                         onChange={handleMobileChange}
                         required
@@ -252,6 +279,7 @@ export default function App() {
                       <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                     </Button>
                   </div>
+                  {fieldErrors.MOBILE && <p className="text-xs text-red-500 mt-1">{fieldErrors.MOBILE}</p>}
                   <p className="mt-2 text-[10px] sm:text-xs text-slate-400">
                     Data will auto-fetch once 10 digits are entered.
                   </p>
