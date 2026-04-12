@@ -214,19 +214,8 @@ export default function App() {
   };
 
   const isReadOnly = (field: keyof FormData) => {
-    // If it's a new record, nothing is readonly
-    if (!isExisting) return false;
-    
-    // If the field is currently empty or has a validation error, allow editing
-    if (!formData[field] || formData[field].toString().trim() === "") return false;
-    if (fieldErrors[field]) return false;
-
-    // For existing records, these fields are readonly
-    const readonlyFields: (keyof FormData)[] = [
-      "NAME", "Designation", 
-      "Office Name", "Office Address with pin code"
-    ];
-    return readonlyFields.includes(field);
+    // All fields are now editable
+    return false;
   };
 
   return (
@@ -273,21 +262,38 @@ export default function App() {
                         id="MOBILE"
                         type="tel"
                         placeholder="10-digit mobile"
-                        className={`pl-9 sm:pl-10 h-11 sm:h-12 text-base sm:text-lg border-slate-300 focus:ring-slate-900 focus:border-slate-900 ${fieldErrors.MOBILE ? 'border-red-500' : ''}`}
+                        readOnly={isExisting && !loading}
+                        className={`pl-9 sm:pl-10 h-11 sm:h-12 text-base sm:text-lg border-slate-300 focus:ring-slate-900 focus:border-slate-900 ${fieldErrors.MOBILE ? 'border-red-500' : ''} ${isExisting ? 'bg-slate-50' : ''}`}
                         value={formData.MOBILE}
                         onChange={handleMobileChange}
                         required
                       />
                     </div>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      className="h-11 sm:h-12 px-3 sm:px-4 border-slate-300 hover:bg-slate-100"
-                      onClick={() => fetchData(formData.MOBILE)}
-                      disabled={loading || formData.MOBILE.length < 10}
-                    >
-                      <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </Button>
+                    {isExisting ? (
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="h-11 sm:h-12 px-3 sm:px-4 border-slate-300 hover:bg-slate-100 text-slate-600"
+                        onClick={() => {
+                          setIsExisting(false);
+                          setFormData(initialFormData);
+                          setFieldErrors({});
+                          setError(null);
+                        }}
+                      >
+                        <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </Button>
+                    ) : (
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        className="h-11 sm:h-12 px-3 sm:px-4 border-slate-300 hover:bg-slate-100"
+                        onClick={() => fetchData(formData.MOBILE)}
+                        disabled={loading || formData.MOBILE.length < 10}
+                      >
+                        <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </Button>
+                    )}
                   </div>
                   {fieldErrors.MOBILE && <p className="text-xs text-red-500 mt-1">{fieldErrors.MOBILE}</p>}
                   <p className="mt-2 text-[10px] sm:text-xs text-slate-400">
