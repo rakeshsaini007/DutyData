@@ -325,7 +325,7 @@ export default function App() {
                         value={formData.NAME} 
                         readOnly={isReadOnly("NAME")} 
                         className={`${isReadOnly("NAME") ? 'bg-slate-50' : ''} ${fieldErrors.NAME ? 'border-red-500' : ''}`}
-                        onChange={(e) => setFormData(prev => ({ ...prev, NAME: e.target.value }))}
+                        onChange={(e) => setFormData(prev => ({ ...prev, NAME: e.target.value.toUpperCase() }))}
                       />
                       {fieldErrors.NAME && <p className="text-xs text-red-500 mt-1">{fieldErrors.NAME}</p>}
                     </div>
@@ -385,13 +385,20 @@ export default function App() {
                     
                     <div className="space-y-2">
                       <Label htmlFor="Designation">Designation <span className="text-red-500">*</span></Label>
-                      <Input 
-                        id="Designation" 
-                        value={formData.Designation} 
-                        readOnly={isReadOnly("Designation")} 
-                        className={`${isReadOnly("Designation") ? 'bg-slate-50' : ''} ${fieldErrors.Designation ? 'border-red-500' : ''}`}
+                      <select
+                        id="Designation"
+                        disabled={isReadOnly("Designation")}
+                        className={`flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${isReadOnly("Designation") ? 'bg-slate-50' : ''} ${fieldErrors.Designation ? 'border-red-500' : ''}`}
+                        value={formData.Designation}
                         onChange={(e) => setFormData(prev => ({ ...prev, Designation: e.target.value }))}
-                      />
+                      >
+                        <option value="">Select Designation</option>
+                        <option value="AT">AT</option>
+                        <option value="HT">HT</option>
+                        <option value="LEKHPAL">LEKHPAL</option>
+                        <option value="SM">SM</option>
+                        <option value="ANUDESHAK">ANUDESHAK</option>
+                      </select>
                       {fieldErrors.Designation && <p className="text-xs text-red-500 mt-1">{fieldErrors.Designation}</p>}
                     </div>
 
