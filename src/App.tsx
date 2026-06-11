@@ -253,7 +253,7 @@ export default function App() {
               <div className="bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-100">
                 <div className="max-w-md">
                   <Label htmlFor="MOBILE" className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2 block">
-                    Mobile Number
+                    HLO App Registered Mobile Number
                   </Label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
@@ -319,7 +319,7 @@ export default function App() {
                     </h3>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="NAME">Full Name <span className="text-red-500">*</span></Label>
+                      <Label htmlFor="NAME">Full Name as per Record/EHRMS <span className="text-red-500">*</span></Label>
                       <Input 
                         id="NAME" 
                         value={formData.NAME} 
