@@ -29,6 +29,7 @@ interface FormData {
   "BANK NAME": string;
   "BRANCH": string;
   "EHRMS CODE": string;
+  "FIELD TRAINER": string;
   MasterFilter: string;
 }
 
@@ -48,6 +49,7 @@ const initialFormData: FormData = {
   "BANK NAME": "",
   "BRANCH": "",
   "EHRMS CODE": "",
+  "FIELD TRAINER": "",
   MasterFilter: "",
 };
 
@@ -328,6 +330,18 @@ export default function App() {
                         onChange={(e) => setFormData(prev => ({ ...prev, NAME: e.target.value.toUpperCase() }))}
                       />
                       {fieldErrors.NAME && <p className="text-xs text-red-500 mt-1">{fieldErrors.NAME}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="FIELD_TRAINER">Field Trainer <span className="text-red-500">*</span></Label>
+                      <Input 
+                        id="FIELD_TRAINER" 
+                        value={formData["FIELD TRAINER"]} 
+                        readOnly={isReadOnly("FIELD TRAINER")} 
+                        className={`${isReadOnly("FIELD TRAINER") ? 'bg-slate-50' : ''} ${fieldErrors["FIELD TRAINER"] ? 'border-red-500' : ''}`}
+                        onChange={(e) => setFormData(prev => ({ ...prev, "FIELD TRAINER": e.target.value.toUpperCase() }))}
+                      />
+                      {fieldErrors["FIELD TRAINER"] && <p className="text-xs text-red-500 mt-1">{fieldErrors["FIELD TRAINER"]}</p>}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
