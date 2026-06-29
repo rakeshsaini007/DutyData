@@ -24,8 +24,11 @@ const SHEET_NAME = "Sheet1";
 
 function doGet(e) {
   const mobile = e.parameter.mobile;
-  if (!mobile) {
-    return createResponse({ success: false, error: "Mobile number is required" });
+  const pan = e.parameter.pan;
+  const adhar = e.parameter.adhar;
+  
+  if (!mobile && !pan && !adhar) {
+    return createResponse({ success: false, error: "Search query is required" });
   }
 
   try {
@@ -37,19 +40,32 @@ function doGet(e) {
     const data = sheet.getDataRange().getValues();
     const headers = data[0];
     const mobileIndex = headers.indexOf("MOBILE");
+    const panIndex = headers.indexOf("PAN Number");
+    const adharIndex = headers.indexOf("Adhar Number");
 
-    if (mobileIndex === -1) {
-      return createResponse({ success: false, error: "MOBILE column not found" });
+    let matchRowIndex = -1;
+    
+    for (let i = 1; i < data.length; i++) {
+      if (pan && panIndex !== -1 && data[i][panIndex].toString().trim().toUpperCase() === pan.toString().trim().toUpperCase()) {
+        matchRowIndex = i;
+        break;
+      }
+      if (adhar && adharIndex !== -1 && data[i][adharIndex].toString().trim() === adhar.toString().trim()) {
+        matchRowIndex = i;
+        break;
+      }
+      if (mobile && mobileIndex !== -1 && data[i][mobileIndex].toString().trim() === mobile.toString().trim()) {
+        matchRowIndex = i;
+        break;
+      }
     }
 
-    for (let i = 1; i < data.length; i++) {
-      if (data[i][mobileIndex].toString().trim() === mobile.toString().trim()) {
-        const result = {};
-        headers.forEach((header, index) => {
-          result[header] = data[i][index];
-        });
-        return createResponse({ success: true, data: result, exists: true });
-      }
+    if (matchRowIndex !== -1) {
+      const result = {};
+      headers.forEach((header, index) => {
+        result[header] = data[matchRowIndex][index];
+      });
+      return createResponse({ success: true, data: result, exists: true });
     }
 
     return createResponse({ success: true, exists: false });
@@ -61,24 +77,27 @@ function doGet(e) {
 function doPost(e) {
   try {
     const payload = JSON.parse(e.postData.contents);
-    const mobile = payload.MOBILE;
     
-    if (!mobile) {
-      return createResponse({ success: false, error: "Mobile number is required" });
-    }
-
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
     const data = sheet.getDataRange().getValues();
     const headers = data[0];
     const mobileIndex = headers.indexOf("MOBILE");
-
-    if (mobileIndex === -1) {
-      return createResponse({ success: false, error: "MOBILE column not found" });
-    }
+    const panIndex = headers.indexOf("PAN Number");
+    const adharIndex = headers.indexOf("Adhar Number");
 
     let rowIndex = -1;
+    
+    // Find row by PAN or Aadhaar first, since they are our primary keys now
     for (let i = 1; i < data.length; i++) {
-      if (data[i][mobileIndex].toString().trim() === mobile.toString().trim()) {
+      if (panIndex !== -1 && payload["PAN Number"] && data[i][panIndex].toString().trim().toUpperCase() === payload["PAN Number"].toString().trim().toUpperCase()) {
+        rowIndex = i + 1;
+        break;
+      }
+      if (adharIndex !== -1 && payload["Adhar Number"] && data[i][adharIndex].toString().trim() === payload["Adhar Number"].toString().trim()) {
+        rowIndex = i + 1;
+        break;
+      }
+      if (mobileIndex !== -1 && payload.MOBILE && data[i][mobileIndex].toString().trim() === payload.MOBILE.toString().trim()) {
         rowIndex = i + 1;
         break;
       }

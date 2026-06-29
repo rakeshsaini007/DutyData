@@ -57,6 +57,10 @@ export default function App() {
   const [isExisting, setIsExisting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  
+  const [searchType, setSearchType] = useState<"PAN" | "AADHAAR">("PAN");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   const validate = (): boolean => {
     const errors: Partial<Record<keyof FormData, string>> = {};
@@ -125,25 +129,37 @@ export default function App() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-    setFormData(prev => ({ ...prev, MOBILE: value }));
-    
-    // Reset state if mobile is not 10 digits
-    if (value.length !== 10) {
-      setIsExisting(false);
-      setError(null);
-      setFieldErrors({});
+  const handleSearchQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    if (searchType === "PAN") {
+      value = value.toUpperCase().slice(0, 10);
     } else {
-      fetchData(value);
+      value = value.replace(/\D/g, '').slice(0, 12);
+    }
+    setSearchQuery(value);
+    setSearchError(null);
+    setIsExisting(false);
+    setError(null);
+
+    // Auto-fetch when query reaches full length and is valid
+    if (searchType === "PAN" && value.length === 10) {
+      const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+      if (panRegex.test(value)) {
+        fetchData("PAN", value);
+      } else {
+        setSearchError("Invalid PAN format (e.g. ABCDE1234F)");
+      }
+    } else if (searchType === "AADHAAR" && value.length === 12) {
+      fetchData("AADHAAR", value);
     }
   };
 
-  const fetchData = async (mobile: string) => {
+  const fetchData = async (type: "PAN" | "AADHAAR", val: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${APPS_SCRIPT_URL}?mobile=${mobile}`);
+      const param = type === "PAN" ? "pan" : "adhar";
+      const response = await axios.get(`${APPS_SCRIPT_URL}?${param}=${encodeURIComponent(val)}`);
       if (response.data.success) {
         if (response.data.exists) {
           // Filter fetched data to only include known fields
@@ -160,9 +176,13 @@ export default function App() {
           toast.success("Data fetched successfully!");
         } else {
           setIsExisting(false);
-          // Keep the mobile number but reset other fields if not found
-          setFormData(prev => ({ ...initialFormData, MOBILE: prev.MOBILE }));
-          toast.info("No existing record found for this mobile number.");
+          // Reset other fields except the searched one
+          setFormData(prev => ({
+            ...initialFormData,
+            "PAN Number": type === "PAN" ? val : "",
+            "Adhar Number": type === "AADHAAR" ? val : "",
+          }));
+          toast.info(`No existing record found for this ${type === "PAN" ? "PAN" : "Aadhaar"} Number.`);
         }
       } else {
         setError(response.data.error || "Failed to fetch data");
@@ -179,7 +199,7 @@ export default function App() {
     e.preventDefault();
     
     if (!isExisting) {
-      toast.error("Access Denied: This mobile number is not registered in our records.");
+      toast.error(`Access Denied: This ${searchType === "PAN" ? "PAN" : "Aadhaar"} is not registered in our records.`);
       return;
     }
 
@@ -238,7 +258,7 @@ export default function App() {
               <div>
                 <CardTitle className="text-xl sm:text-2xl font-semibold">Data Management Portal</CardTitle>
                 <CardDescription className="text-slate-300 mt-1 sm:mt-2 text-sm sm:text-base">
-                  Enter mobile number to fetch or update records
+                  Enter PAN or Aadhaar card number to fetch or update records
                 </CardDescription>
               </div>
               <div className="bg-slate-800 p-2 sm:p-3 rounded-full shrink-0">
@@ -249,23 +269,64 @@ export default function App() {
 
           <CardContent className="p-5 sm:p-8">
             <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
-              {/* Mobile Number Section */}
+              {/* PAN or Aadhaar Search Section */}
               <div className="bg-slate-50 p-4 sm:p-6 rounded-xl border border-slate-100">
                 <div className="max-w-md">
-                  <Label htmlFor="MOBILE" className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2 block">
-                    HLO App Registered Mobile Number
-                  </Label>
+                  <div className="flex items-center justify-between mb-4">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">
+                      Search Employee Record By
+                    </Label>
+                    <div className="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-1">
+                      <button
+                        type="button"
+                        className={`inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+                          searchType === "PAN"
+                            ? "bg-white text-slate-900 shadow-sm"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                        onClick={() => {
+                          setSearchType("PAN");
+                          setSearchQuery("");
+                          setSearchError(null);
+                          setIsExisting(false);
+                        }}
+                      >
+                        PAN Card
+                      </button>
+                      <button
+                        type="button"
+                        className={`inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+                          searchType === "AADHAAR"
+                            ? "bg-white text-slate-900 shadow-sm"
+                            : "text-slate-600 hover:text-slate-900"
+                        }`}
+                        onClick={() => {
+                          setSearchType("AADHAAR");
+                          setSearchQuery("");
+                          setSearchError(null);
+                          setIsExisting(false);
+                        }}
+                      >
+                        Aadhaar Card
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="flex gap-2">
                     <div className="relative flex-1">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
+                      <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
                       <Input
-                        id="MOBILE"
-                        type="tel"
-                        placeholder="10-digit mobile"
+                        id="searchQuery"
+                        type="text"
+                        placeholder={
+                          searchType === "PAN"
+                            ? "Enter 10-character PAN (e.g. ABCDE1234F)"
+                            : "Enter 12-digit Aadhaar Number"
+                        }
                         readOnly={isExisting && !loading}
-                        className={`pl-9 sm:pl-10 h-11 sm:h-12 text-base sm:text-lg border-slate-300 focus:ring-slate-900 focus:border-slate-900 ${fieldErrors.MOBILE ? 'border-red-500' : ''} ${isExisting ? 'bg-slate-50' : ''}`}
-                        value={formData.MOBILE}
-                        onChange={handleMobileChange}
+                        className={`pl-9 sm:pl-10 h-11 sm:h-12 text-base sm:text-lg border-slate-300 focus:ring-slate-900 focus:border-slate-900 ${searchError ? 'border-red-500' : ''} ${isExisting ? 'bg-slate-50' : ''}`}
+                        value={searchQuery}
+                        onChange={handleSearchQueryChange}
                         required
                       />
                     </div>
@@ -276,9 +337,11 @@ export default function App() {
                         className="h-11 sm:h-12 px-3 sm:px-4 border-slate-300 hover:bg-slate-100 text-slate-600"
                         onClick={() => {
                           setIsExisting(false);
+                          setSearchQuery("");
                           setFormData(initialFormData);
                           setFieldErrors({});
                           setError(null);
+                          setSearchError(null);
                         }}
                       >
                         <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -288,16 +351,18 @@ export default function App() {
                         type="button" 
                         variant="outline" 
                         className="h-11 sm:h-12 px-3 sm:px-4 border-slate-300 hover:bg-slate-100"
-                        onClick={() => fetchData(formData.MOBILE)}
-                        disabled={loading || formData.MOBILE.length < 10}
+                        onClick={() => fetchData(searchType, searchQuery)}
+                        disabled={loading || (searchType === "PAN" && searchQuery.length < 10) || (searchType === "AADHAAR" && searchQuery.length < 12)}
                       >
                         <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                       </Button>
                     )}
                   </div>
-                  {fieldErrors.MOBILE && <p className="text-xs text-red-500 mt-1">{fieldErrors.MOBILE}</p>}
+                  {searchError && <p className="text-xs text-red-500 mt-1">{searchError}</p>}
                   <p className="mt-2 text-[10px] sm:text-xs text-slate-400">
-                    Data will auto-fetch once 10 digits are entered.
+                    {searchType === "PAN" 
+                      ? "Data will auto-fetch once valid 10-character PAN is entered."
+                      : "Data will auto-fetch once 12 digits are entered."}
                   </p>
                 </div>
               </div>
@@ -328,6 +393,19 @@ export default function App() {
                         onChange={(e) => setFormData(prev => ({ ...prev, NAME: e.target.value.toUpperCase() }))}
                       />
                       {fieldErrors.NAME && <p className="text-xs text-red-500 mt-1">{fieldErrors.NAME}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="MOBILE">HLO App Registered Mobile Number</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input 
+                          id="MOBILE" 
+                          className="pl-10 bg-slate-50 cursor-not-allowed border-slate-200 text-slate-500"
+                          value={formData.MOBILE} 
+                          readOnly={true}
+                        />
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -520,19 +598,19 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-              ) : formData.MOBILE.length === 10 && !loading ? (
+              ) : ((searchType === "PAN" && searchQuery.length === 10) || (searchType === "AADHAAR" && searchQuery.length === 12)) && !loading ? (
                 <div className="bg-amber-50 border border-amber-200 p-6 rounded-xl text-center animate-in zoom-in-95 duration-300">
                   <Hash className="w-12 h-12 text-amber-500 mx-auto mb-4" />
                   <h3 className="text-lg font-bold text-amber-900 mb-2">Access Restricted</h3>
                   <p className="text-amber-700">
-                    This mobile number is not registered in our database. 
-                    Please contact the administrator to register your number.
+                    This {searchType === "PAN" ? "PAN Card" : "Aadhaar Card"} number is not registered in our database. 
+                    Please contact the administrator to register your details.
                   </p>
                 </div>
               ) : (
                 <div className="bg-slate-50 border border-dashed border-slate-200 p-12 rounded-xl text-center">
-                  <Phone className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500">Enter a registered mobile number to access the form.</p>
+                  <CreditCard className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-500">Enter a registered PAN or Aadhaar card number to access the form.</p>
                 </div>
               )}
 
