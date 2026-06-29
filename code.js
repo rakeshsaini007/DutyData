@@ -46,17 +46,24 @@ function doGet(e) {
     let matchRowIndex = -1;
     
     for (let i = 1; i < data.length; i++) {
-      if (pan && panIndex !== -1 && data[i][panIndex].toString().trim().toUpperCase() === pan.toString().trim().toUpperCase()) {
-        matchRowIndex = i;
-        break;
+      const row = data[i];
+      if (pan && panIndex !== -1 && row[panIndex] !== undefined && row[panIndex] !== null) {
+        if (row[panIndex].toString().trim().toUpperCase() === pan.toString().trim().toUpperCase()) {
+          matchRowIndex = i;
+          break;
+        }
       }
-      if (adhar && adharIndex !== -1 && data[i][adharIndex].toString().trim() === adhar.toString().trim()) {
-        matchRowIndex = i;
-        break;
+      if (adhar && adharIndex !== -1 && row[adharIndex] !== undefined && row[adharIndex] !== null) {
+        if (row[adharIndex].toString().trim() === adhar.toString().trim()) {
+          matchRowIndex = i;
+          break;
+        }
       }
-      if (mobile && mobileIndex !== -1 && data[i][mobileIndex].toString().trim() === mobile.toString().trim()) {
-        matchRowIndex = i;
-        break;
+      if (mobile && mobileIndex !== -1 && row[mobileIndex] !== undefined && row[mobileIndex] !== null) {
+        if (row[mobileIndex].toString().trim() === mobile.toString().trim()) {
+          matchRowIndex = i;
+          break;
+        }
       }
     }
 
@@ -79,6 +86,10 @@ function doPost(e) {
     const payload = JSON.parse(e.postData.contents);
     
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    if (!sheet) {
+      return createResponse({ success: false, error: "Sheet '" + SHEET_NAME + "' not found" });
+    }
+
     const data = sheet.getDataRange().getValues();
     const headers = data[0];
     const mobileIndex = headers.indexOf("MOBILE");
@@ -89,17 +100,24 @@ function doPost(e) {
     
     // Find row by PAN or Aadhaar first, since they are our primary keys now
     for (let i = 1; i < data.length; i++) {
-      if (panIndex !== -1 && payload["PAN Number"] && data[i][panIndex].toString().trim().toUpperCase() === payload["PAN Number"].toString().trim().toUpperCase()) {
-        rowIndex = i + 1;
-        break;
+      const row = data[i];
+      if (panIndex !== -1 && payload["PAN Number"] && row[panIndex] !== undefined && row[panIndex] !== null) {
+        if (row[panIndex].toString().trim().toUpperCase() === payload["PAN Number"].toString().trim().toUpperCase()) {
+          rowIndex = i + 1;
+          break;
+        }
       }
-      if (adharIndex !== -1 && payload["Adhar Number"] && data[i][adharIndex].toString().trim() === payload["Adhar Number"].toString().trim()) {
-        rowIndex = i + 1;
-        break;
+      if (adharIndex !== -1 && payload["Adhar Number"] && row[adharIndex] !== undefined && row[adharIndex] !== null) {
+        if (row[adharIndex].toString().trim() === payload["Adhar Number"].toString().trim()) {
+          rowIndex = i + 1;
+          break;
+        }
       }
-      if (mobileIndex !== -1 && payload.MOBILE && data[i][mobileIndex].toString().trim() === payload.MOBILE.toString().trim()) {
-        rowIndex = i + 1;
-        break;
+      if (mobileIndex !== -1 && payload.MOBILE && row[mobileIndex] !== undefined && row[mobileIndex] !== null) {
+        if (row[mobileIndex].toString().trim() === payload.MOBILE.toString().trim()) {
+          rowIndex = i + 1;
+          break;
+        }
       }
     }
 
