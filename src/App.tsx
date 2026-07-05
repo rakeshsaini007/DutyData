@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Loader2, Search, Save, RefreshCw, User, Phone, Mail, CreditCard, Building2, MapPin, Hash } from "lucide-react";
+import { Loader2, Search, Save, RefreshCw, User, Phone, Mail, CreditCard, Building2, MapPin, Hash, PhoneCall, MessageCircle } from "lucide-react";
 
 // Replace this with your actual Google Apps Script Web App URL after deployment
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby3iXnKtx0KKiNd1zwXJpbbtQpG49racC3kTogZSaJ-c7vN4s4mk0bWmeuIh8WBk5sLqw/exec";
@@ -397,14 +397,36 @@ export default function App() {
 
                     <div className="space-y-2">
                       <Label htmlFor="MOBILE">HLO App Registered Mobile Number</Label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <Input 
-                          id="MOBILE" 
-                          className="pl-10 bg-slate-50 cursor-not-allowed border-slate-200 text-slate-500"
-                          value={formData.MOBILE} 
-                          readOnly={true}
-                        />
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Input 
+                            id="MOBILE" 
+                            className="pl-10 bg-slate-50 cursor-not-allowed border-slate-200 text-slate-500"
+                            value={formData.MOBILE} 
+                            readOnly={true}
+                          />
+                        </div>
+                        {formData.MOBILE && (
+                          <>
+                            <a
+                              href={`tel:${formData.MOBILE}`}
+                              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 h-10 w-10 shrink-0 shadow-sm"
+                              title="Call Employee"
+                            >
+                              <PhoneCall className="w-4 h-4" />
+                            </a>
+                            <a
+                              href={`https://wa.me/${formData.MOBILE.startsWith('91') || formData.MOBILE.length > 10 ? formData.MOBILE.replace(/\D/g, '') : '91' + formData.MOBILE.replace(/\D/g, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-green-200 bg-green-50 text-green-600 hover:bg-green-100 h-10 w-10 shrink-0 shadow-sm"
+                              title="Chat on WhatsApp"
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                            </a>
+                          </>
+                        )}
                       </div>
                     </div>
 
