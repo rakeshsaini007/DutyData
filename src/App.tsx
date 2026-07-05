@@ -162,12 +162,13 @@ export default function App() {
       const response = await axios.get(`${APPS_SCRIPT_URL}?${param}=${encodeURIComponent(val)}`);
       if (response.data.success) {
         if (response.data.exists) {
-          // Filter fetched data to only include known fields
+          // Filter fetched data to only include known fields, ensuring they are parsed as strings
           const fetchedData = response.data.data;
           const filteredData: Partial<FormData> = {};
           Object.keys(initialFormData).forEach(key => {
             if (Object.prototype.hasOwnProperty.call(fetchedData, key)) {
-              filteredData[key as keyof FormData] = fetchedData[key];
+              const val = fetchedData[key];
+              filteredData[key as keyof FormData] = (val !== undefined && val !== null) ? String(val) : "";
             }
           });
           
@@ -409,22 +410,32 @@ export default function App() {
                         </div>
                         {formData.MOBILE && (
                           <>
-                            <a
-                              href={`tel:${formData.MOBILE}`}
-                              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 h-10 w-10 shrink-0 shadow-sm"
-                              title="Call Employee"
-                            >
-                              <PhoneCall className="w-4 h-4" />
-                            </a>
-                            <a
-                              href={`https://wa.me/${formData.MOBILE.startsWith('91') || formData.MOBILE.length > 10 ? formData.MOBILE.replace(/\D/g, '') : '91' + formData.MOBILE.replace(/\D/g, '')}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-green-200 bg-green-50 text-green-600 hover:bg-green-100 h-10 w-10 shrink-0 shadow-sm"
-                              title="Chat on WhatsApp"
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                            </a>
+                            {(() => {
+                              const mobileStr = String(formData.MOBILE).trim();
+                              const cleanedMobile = mobileStr.replace(/\D/g, '');
+                              const isIndianFormat = mobileStr.startsWith('91') || mobileStr.length > 10;
+                              const waUrl = `https://wa.me/${isIndianFormat ? cleanedMobile : '91' + cleanedMobile}`;
+                              return (
+                                <>
+                                  <a
+                                    href={`tel:${mobileStr}`}
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 h-10 w-10 shrink-0 shadow-sm"
+                                    title="Call Employee"
+                                  >
+                                    <PhoneCall className="w-4 h-4" />
+                                  </a>
+                                  <a
+                                    href={waUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-green-200 bg-green-50 text-green-600 hover:bg-green-100 h-10 w-10 shrink-0 shadow-sm"
+                                    title="Chat on WhatsApp"
+                                  >
+                                    <MessageCircle className="w-4 h-4" />
+                                  </a>
+                                </>
+                              );
+                            })()}
                           </>
                         )}
                       </div>
